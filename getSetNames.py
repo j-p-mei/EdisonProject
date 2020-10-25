@@ -2,8 +2,8 @@ import requests
 import json
 import pprint
 import csv
+from variables import *
 
-access_token = "L3QVhSKUq52p0wBULnfwGh8mISxeRBV25L9K5MPbWncQXJvnoU0zJ5vvEWxYL0fA1To2gsR4MXiSkVPufdBWX3CDbD-_U_FvFFQRvr0lFJqQgvJheD9nrr6baEgAcpHAlVAbx7OZhN87KrCCTtVcqjkf7qj9zQ9A2mjpVgFmKVdDZZ4_1DaAkhrEjgz1zB2R4JSIKFSdEN2XbY-NOvEtzckpVLJMb7VGcPU5w_T626PLFrKlZCoZ4VfGMvOcrTG7RXXZ1jTxhA23S4bUmQVAzo1cyodEzSLbTYhfKfxwcVqqjmLCfNO48xPxygP5ldTvKDsRxA"
 offset = 0
 count = 0
 totalItems = 1
@@ -51,7 +51,7 @@ while (offset <= totalItems):
 setFile = open("setDictionary.csv", "w")
 
 writer = csv.writer(setFile)
+#writer.write("Set,SetID")
 for key, value in setDictionary.items():
     writer.writerow([key, value])
-
 setFile.close()
