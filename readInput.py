@@ -2,7 +2,7 @@ import csv
 import pprint
 import requests
 import json
-
+from variables import *
 
 # Card Name, Rarity, Release Set, Group ID, Edition, Condition
 cardDictionary = {}
@@ -10,50 +10,108 @@ cardDictionary = {}
 with open('card_list.csv', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        name = row["Card Name"]
-        rarity = row['Rarity']
-        set = row['Set']
-        edition = row['Edition']
-        condition = row['Condition']
-        #print(row["Card Name"], row['Rarity'], row['Set'])
+        name = row["Card Name"].strip()
+        set = row['Set'].strip()
         try:
-            cardDictionary[set].append((name, rarity, edition, condition))
+            cardDictionary[set].append(name)
         except:
-            cardDictionary[set] = [(name, rarity, edition, condition)]
+            cardDictionary[set] = [name]
 
 #pprint.pprint(cardDictionary)
 
 setDictionary = {}
+reverseSetDictionary = {}
 
 with open('setDictionary.csv', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        set = row["set"]
-        setID = row["setID"]
+        set = row["Set"].strip()
+        setID = row["SetID"]
         setDictionary[set] = setID
+        reverseSetDictionary[setID] = set
+#pprint.pprint(setDictionary)
 
 url = "https://api.tcgplayer.com/pricing/group/groupId"
-access_token = "L3QVhSKUq52p0wBULnfwGh8mISxeRBV25L9K5MPbWncQXJvnoU0zJ5vvEWxYL0fA1To2gsR4MXiSkVPufdBWX3CDbD-_U_FvFFQRvr0lFJqQgvJheD9nrr6baEgAcpHAlVAbx7OZhN87KrCCTtVcqjkf7qj9zQ9A2mjpVgFmKVdDZZ4_1DaAkhrEjgz1zB2R4JSIKFSdEN2XbY-NOvEtzckpVLJMb7VGcPU5w_T626PLFrKlZCoZ4VfGMvOcrTG7RXXZ1jTxhA23S4bUmQVAzo1cyodEzSLbTYhfKfxwcVqqjmLCfNO48xPxygP5ldTvKDsRxA"
+access_token = access_token
+
 headers = {
-	'accept': 'application/json',
-	"Authorization": "bearer " + access_token
+    'accept': 'application/json',
+    "Authorization": "bearer " + access_token
 }
 
+pidDictionary = {}
 
 for key in cardDictionary:
-
+    setID = setDictionary[key]
+    #print (cardDictionary[key])
     for card in cardDictionary[key]:
-        name, rarity, edition, condition = card
-        payload = {
-        	"limit": '100',
-        	"categoryId":"2",
-        	"productName": name,
-        	"groupName": key
-        	#"offset":99
-        }
+        # we need the productID for each card
+        url_card = "https://api.tcgplayer.com/catalog/products/"
+        headers_card = {
+            'accept': 'application/json',
+            "Authorization": "bearer " + access_token,
+            "includeSkus":"true"
+            }
 
-    response = requests.request("GET", url, headers=headers, params=payload)
-    json_response = json.loads(response.text)
-    #json_response_results = json_response["results"]
-    print(json_response)
-    print ("======")
+        payload_card = {
+                'limit': '100',
+                "categoryId":categoryId,
+                "productName": card
+            }
+
+        response_card = requests.request("GET", url_card, headers=headers_card, params=payload_card)
+
+        json_response_card = json.loads(response_card.text)
+        json_response_card_results = json_response_card["results"]
+
+        #pprint.pprint (json_response_card)
+
+        for item in json_response_card_results:
+             if (int(item["groupId"]) == int(setID)):
+                pid = item["productId"]
+                try:
+                    pidDictionary[int(setDictionary[key])].append((pid, card))
+                except:
+                    pidDictionary[int(setDictionary[key])] = [(pid, card)]
+                
+#print (pidDictionary)
+
+url_price = "https://api.tcgplayer.com/pricing/group/groupId"
+
+headers_price = {
+    'accept': 'application/json',
+    "Authorization": "bearer " + access_token
+    }
+
+cardPrices = {}
+
+for setKey in pidDictionary:  
+    setID = reverseSetDictionary[str(setKey)]
+    payload_price = {
+    'limit': '100',
+    "categoryId": categoryId,
+    "groupId": setKey 
+    }
+    priceDictionary = {}
+    response_price = requests.request("GET", url_price, headers=headers_price, params=payload_price)
+
+    json_response_price = json.loads(response_price.text)
+    json_response_results = json_response_price["results"]
+    for item in json_response_results:
+        pid = item["productId"]
+        price = item["lowPrice"]
+        edition = item["subTypeName"]
+        try:
+            priceDictionary[pid].append((price, edition))
+        except:
+            priceDictionary[pid] = [(price, edition)]   
+
+    #print (priceDictionary)
+
+    for item in pidDictionary[setKey]:
+        pid = item[0]
+        name = item[1]
+        price = priceDictionary[pid]
+        cardPrices[(name, setID)] = price
+    
+pprint.pprint(cardPrices)

@@ -2,3 +2,5 @@ access_token = "LHkCptlnfdvqpDrqNmflavzqAOY_ARltFX4WVzwIBeYVrzixGKnxNxVeZacnl973
 
 public = "28cde0a8-2577-4f89-a616-3fdfab78d006"
 secret = "a2f65722-c646-4b22-887c-be3c19e77992"
+
+categoryId = 2
