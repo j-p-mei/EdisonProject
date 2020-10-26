@@ -2,7 +2,10 @@ import csv
 import pprint
 import requests
 import json
+import pickle
 from variables import *
+from datetime import datetime
+
 
 # Card Name, Rarity, Release Set, Group ID, Edition, Condition
 cardDictionary = {}
@@ -112,6 +115,24 @@ for setKey in pidDictionary:
         pid = item[0]
         name = item[1]
         price = priceDictionary[pid]
-        cardPrices[(name, setID)] = price
+        itemDict = {"set": setID,
+                    "price": {"value": price,
+                              "edition": edition
+                              }
+                    }
+        try:
+            cardPrices[name].append(itemDict)
+        except:
+            cardPrices[name] = [itemDict]
     
-pprint.pprint(cardPrices)
+#pprint.pprint(cardPrices)
+
+#Add timestamp for today
+#datetime object containing current date and time
+now = datetime.now()
+dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+
+cardPrices["date"] = dt_string
+
+json.dump(cardPrices, open("output.txt", 'w'))
+#data = json.load(open("output.txt"))

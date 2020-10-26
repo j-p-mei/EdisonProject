@@ -4,3 +4,13 @@ public = "28cde0a8-2577-4f89-a616-3fdfab78d006"
 secret = "a2f65722-c646-4b22-887c-be3c19e77992"
 
 categoryId = 2
+
+#MongoDB Credentials
+mongo_user = "admin"
+mongo_pw = "edison"
+mongo_dbname = "CL0"
+
+uri = "mongodb+srv://%s:%s@cl0.8mlyp.mongodb.net/%s?retryWrites=true&w=majority" % (mongo_user, mongo_pw, mongo_dbname)
+
+#client = pymongo.MongoClient(uri) 
+#db = client.test
