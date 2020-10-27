@@ -121,13 +121,15 @@ for setKey in pidDictionary:
             v = entry[0]
             temp[k] = v
 
-        itemDict = {"set": setID,
+        '''itemDict = {"set": setID,
                     "price": temp,
                     }
+        '''
         try:
-            cardPrices[name].append(itemDict)
+            cardPrices[name][setID] = temp
         except:
-            cardPrices[name] = [itemDict]
+            cardPrices[name] = {}
+            cardPrices[name][setID] = temp
     
 #pprint.pprint(cardPrices)
 
