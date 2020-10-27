@@ -115,10 +115,14 @@ for setKey in pidDictionary:
         pid = item[0]
         name = item[1]
         price = priceDictionary[pid]
+        temp = {}
+        for entry in price:
+            k = entry[1]
+            v = entry[0]
+            temp[k] = v
+
         itemDict = {"set": setID,
-                    "price": {"value": price,
-                              "edition": edition
-                              }
+                    "price": temp,
                     }
         try:
             cardPrices[name].append(itemDict)
