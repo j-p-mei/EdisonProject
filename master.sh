@@ -1,2 +1,5 @@
 #!/bin/bash
-python readInput.py
+echo "Running readInput"
+python "readInput.py" 
+echo "Running sendData"
+python "sendData.py"
