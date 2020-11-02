@@ -35,7 +35,6 @@ with open('setDictionary.csv', newline='') as csvfile:
 #pprint.pprint(setDictionary)
 
 url = "https://api.tcgplayer.com/pricing/group/groupId"
-access_token = access_token
 
 headers = {
     'accept': 'application/json',
