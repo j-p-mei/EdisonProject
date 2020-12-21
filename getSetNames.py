@@ -51,7 +51,7 @@ while (offset <= totalItems):
 setFile = open("setDictionary.csv", "w")
 
 writer = csv.writer(setFile)
-#writer.write("Set,SetID")
+writer.writerow(["Set","SetID"])
 for key, value in setDictionary.items():
     writer.writerow([key, value])
 setFile.close()
