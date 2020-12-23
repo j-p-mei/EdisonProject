@@ -2,7 +2,6 @@ import csv
 import pprint
 import requests
 import json
-import pickle
 from variables import *
 from datetime import datetime
 
