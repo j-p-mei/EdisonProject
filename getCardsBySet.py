@@ -72,6 +72,4 @@ for sets in reverseSetDictionary:
         count += 1
 
 json.dump(emptySets, open("emptySets.txt", 'w'))
-now = datetime.now()
-dt_string = now.strftime("%d.%m.%Y")
-json.dump(everyCard, open("allCardsPid_" + dt_string + ".txt", 'w'))
+json.dump(everyCard, open("allCardsPid.txt", 'w'))
