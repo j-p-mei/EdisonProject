@@ -5,21 +5,23 @@ import json
 from variables import *
 from datetime import datetime
 
-skuFile = open("SKUinclusion.txt") #This input file needs to be updated to the allCardsPidSku, once it's created
+# SKU dictionary contains all cards by set, product ID, and SKU ID
+skuFile = open("allCardsPidSku.txt")
 skuDictionary = json.load(skuFile)
 
 # Removes SKUs related to Heavily Played and Damaged Cards
 for product, setList in skuDictionary.items():
     for cardPrint in setList:
         skuSet = {}
-        #condition ID: 1-NM, 2-LP, 3-MP, 4-HP, 5-DMG, 6-Unopened
-        #printing ID: 7-Unl, 8-1st, 23-Limited, 102-Unopened
-        #language ID: 1-Eng
+        # Condition ID: 1-NM, 2-LP, 3-MP, 4-HP, 5-DMG, 6-Unopened
+        # Printing ID: 7-Unl, 8-1st, 23-Limited, 102-Unopened
+        # Language ID: 1-Eng
         for sku in cardPrint[2]:
+            # Only retains items with condition better than Moderately Played and Unopened product
             if sku["conditionId"] is not None and (sku["conditionId"] <= 3 or sku["conditionId"] == 6):
-                # Only condition better than Moderately Played and Unopened product
                 skuSet[sku["skuId"]] = [sku["conditionId"], sku["printingId"], sku["languageId"]]
         cardPrint.insert(2, skuSet)
+        # Removes remaining unnecessary/repeated SKU information
         cardPrint.pop()
 
 # Isolates the SKUs from the dictionary
@@ -28,7 +30,7 @@ onlySKU = []
 for cardName, cardSets in skuDictionary.items():
     for printings in cardSets:
         for skuKey, skuFields in printings[2].items():
-            onlySKU.append(skuKey)
+            onlySKU.append(str(skuKey))
 
 # Pulls market price data - can be batched as 200x SKUs per request (empirically tested)
 url_sku = "https://api.tcgplayer.com/pricing/sku/skuIds"
@@ -38,6 +40,7 @@ headers_sku = {
     "Authorization": "bearer " + access_token
     }
 
+# Parameters for string of SKUs to pass through in bulk
 skuPass = ""
 skuLength = 200
 skuBegin = 0
@@ -60,6 +63,4 @@ while (skuEnd <= len(onlySKU)):
     skuBegin = skuEnd
     skuEnd = min(skuBegin + skuLength, len(onlySKU))
 
-now = datetime.now()
-dt_string = now.strftime("%d.%m.%Y_%H.%M")
-json.dump(marketResultSKU, open("market_pricing_" + dt_string + ".txt", 'w'))
+json.dump(marketResultSKU, open("skuMarketPricing.txt", 'w'))
