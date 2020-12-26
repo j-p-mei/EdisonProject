@@ -1,5 +1,6 @@
 import pprint
 import json
+from variables import *
 
 prices = open("output_raw.txt")
 priceDictionary = json.load(prices)
@@ -18,4 +19,42 @@ for cardName, setList in priceDictionary.items():
     # MongoDB cannot process key names with "."
     cleanPriceDictionary[cardName.replace(".","")] = setList
 
-json.dump(cleanPriceDictionary, open("output.txt", 'w'))
+# Convert output to nested dictionary
+cleanNested = {}
+count = 0
+for cardName, setList in cleanPriceDictionary.items():
+    tempSet = {}
+    for cardPrint in setList:
+        tempEdition = {}
+        tempConditionFirst = [Edition.First.value, {}]
+        tempConditionUnlimited = [Edition.Unl.value, {}]
+        tempConditionLimited = [Edition.Lim.value, {}]
+        tempConditionSealed = [Edition.Sealed.value, {}]
+        allConditions = [tempConditionFirst, tempConditionUnlimited, tempConditionLimited, tempConditionSealed]
+
+        for sku, priceInfo in cardPrint[2].items():
+            tempPricing = {}
+            tempPricing["TCG_low"] = priceInfo[3]
+            tempPricing["sold_market"] = priceInfo[5]
+            tempPricing["sold_low"] = priceInfo[6]
+            tempPricing["sold_high"] = priceInfo[7]
+            count += 1
+
+            for cardCondition in Condition:
+                if priceInfo[0] == cardCondition.value:
+                    conditionName = cardCondition.name
+            for cardEdition in Edition:
+                if priceInfo[1] == cardEdition.value:
+                    editionName = cardEdition.name
+                    for conditionList in allConditions:
+                        if priceInfo[1] == conditionList[0]:
+                            conditionList[1][conditionName] = tempPricing
+                            tempEdition[editionName] = conditionList[1]
+            tempSet[cardPrint[0]] = tempEdition
+
+    try:
+        cleanNested[cardName].append(tempSet)
+    except:
+        cleanNested[cardName] = tempSet
+
+json.dump(cleanNested, open("output.txt", 'w'))
