@@ -42,9 +42,9 @@ while runSuccess != 1: # Retry logic
             for printings in set_name:
                 try:
                     # Check if already in the SKU list - skip if yes and call API to append if no
-                    print(type(printings[2]))
+                    inDictionary = type(printings[2])
                     successCount += 1
-                    print("success " + str(successCount))
+                    #print("success " + str(successCount))
                     cardCount = successCount
                 except:
                     payload_condition = {
@@ -57,7 +57,7 @@ while runSuccess != 1: # Retry logic
                     # Conditions: NM-1, LP-2, MP-3, Unopened-6
                     printings.append(json_response_results_condition)
                     cardCount += 1
-                    print(cardCount)
+                    #print(cardCount)
                     if cardCount % 1000 == 0:
                         json.dump(cardDictionary, open("allCardsPidSku.txt", 'w'))
         # Successfully created pulled all SKU data
@@ -77,8 +77,9 @@ while runSuccess != 1: # Retry logic
         time.sleep(30)
     except:
         # All other errors, maximum of 10
+        print("===== Other Error =====")
         runSuccess = runSuccess - 1
-        if runSuccess > -10:
+        if runSuccess > -100:
             time.sleep(90)
         else:
             print("Failed to pull every SKU")

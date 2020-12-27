@@ -1,6 +1,7 @@
 import pprint
 import json
 from variables import *
+from datetime import datetime
 
 prices = open("output_raw.txt")
 priceDictionary = json.load(prices)
@@ -56,5 +57,10 @@ for cardName, setList in cleanPriceDictionary.items():
         cleanNested[cardName].append(tempSet)
     except:
         cleanNested[cardName] = tempSet
+
+# Timestamp for daily pricing information
+now = datetime.now()
+dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+cleanNested["date"] = dt_string
 
 json.dump(cleanNested, open("output.txt", 'w'))

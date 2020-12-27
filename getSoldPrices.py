@@ -13,7 +13,7 @@ skuDictionary = json.load(skuFile)
 # Condition and edition used to prioritize API passing order
 sealedProduct = []
 # [ 1st Edition, Unlimited Edition, Limited Edition ]
-printingCategory = [8 , 7 , 23]
+printingCategory = [Edition.First.value , Edition.Unl.value , Edition.Lim.value]
 NM = [[], [], []]
 LP = [[], [], []]
 MP = [[], [], []]
@@ -26,17 +26,17 @@ for product, setList in skuDictionary.items():
         # Printing ID: 7-Unl, 8-1st, 23-Limited, 102-Unopened
         # Language ID: 1-Eng
         for sku in cardPrint[2]:
-            if sku["conditionId"] is not None and (sku["conditionId"] <= 3 or sku["conditionId"] == 6):
+            if sku["conditionId"] is not None and (sku["conditionId"] <= Condition.MP.value or sku["conditionId"] == Condition.Sealed.value):
                 # Only Sealed product and singles Moderately Played and better are passed through API
                 skuSet[sku["skuId"]] = [sku["conditionId"], sku["printingId"], sku["languageId"]]
                 # Condition and edition batching for priority
-                if sku["conditionId"] == 6:
+                if sku["conditionId"] == Condition.Sealed.value:
                     sealedProduct.append(sku["skuId"])
-                elif sku["conditionId"] == 1:
+                elif sku["conditionId"] == Condition.NM.value:
                     NM[printingCategory.index(int(sku["printingId"]))].append(sku["skuId"])
-                elif sku["conditionId"] == 2:
+                elif sku["conditionId"] == Condition.LP.value:
                     LP[printingCategory.index(int(sku["printingId"]))].append(sku["skuId"])
-                elif sku["conditionId"] == 3:
+                elif sku["conditionId"] == Condition.MP.value:
                     MP[printingCategory.index(int(sku["printingId"]))].append(sku["skuId"])
         cardPrint.insert(2, skuSet)
         cardPrint.pop()
@@ -51,7 +51,7 @@ while runSuccess != 1: # Retry logic
         cardCount = 0
         successCount = 0
 
-        #Designed as try/except to save the spot of the SKU pull in case API rejects the call
+        # Organized as try/except to save the SKU pull spot in instances where API is not responding or other errors
         try:
             skuSold = open("skuSoldPricing.txt")
             skuSoldDictionary = json.load(skuSold)
@@ -67,9 +67,9 @@ while runSuccess != 1: # Retry logic
                     "Authorization": "bearer " + access_token
                     }
                 try:
-                    print(type(skuSoldDictionary[str(skuIndividual)]))
+                    inDictionary = skuSoldDictionary[str(skuIndividual)]
                     successCount += 1
-                    print("success " + str(successCount))
+                    #print("success " + str(successCount))
                 except:
                     #print(skuIndividual)
                     payload_sku = {
@@ -94,9 +94,10 @@ while runSuccess != 1: # Retry logic
                     if cardCount == 0:
                         cardCount = successCount
                     cardCount += 1
-                    print(cardCount)
+                    #print(cardCount)
                     if cardCount % 1000 == 0:
                         # Save spot after every 1000th iteration (roughly every 7 minutes)
+                        print(cardCount)
                         json.dump(skuSoldDictionary, open("skuSoldPricing.txt", 'w'))
         # Successfully passed every SKU
         json.dump(skuSoldDictionary, open("skuSoldPricing.txt", 'w'))
@@ -124,16 +125,17 @@ while runSuccess != 1: # Retry logic
         time.sleep(95)
     except:
         # All other errors, maximum of 10
+        print("===== Other Error =====")
         runSuccess = runSuccess - 1
-        if runSuccess > -10:
-            time.sleep(45)
+        if runSuccess > -1000:
+            time.sleep(65)
         else:
             print("Failed to pass every SKU")
             # Create incomplete SKU dictionary - merge file will be able to process
             for skuConditions in onlySKU:
                 for skuIndividual in skuConditions:
                     try:
-                        print(type(skuSoldDictionary[str(skuIndividual)]))
+                        inDictionary = skuSoldDictionary[str(skuIndividual)]
                     except:
                         skuSoldDictionary[skuIndividual] = ["Incomplete", "Incomplete", "Incomplete"]
             json.dump(skuSoldDictionary, open("skuSoldPricingIncomplete.txt", 'w'))

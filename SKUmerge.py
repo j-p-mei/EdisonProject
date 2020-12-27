@@ -55,11 +55,11 @@ for setName, setList in skuDictionary.items():
                 skuFields.append(soldPricingData[str(skuKey)][1]) # Append lowest sold price
                 skuFields.append(soldPricingData[str(skuKey)][2]) # Append highest sold price
                 count += 1
-                print(count)
+                #print(count)
             except:
                 pass
-# Final output for MongoDB
-json.dump(skuDictionary, open("output.txt", 'w'))
+# Output for MongoDB, not final - needs to be cleaned by dataCleanse
+json.dump(skuDictionary, open("output_raw.txt", 'w'))
 
 # Final output in CSV form
 now = datetime.now()
@@ -68,7 +68,7 @@ setFile = open("output_" + dt_string + ".csv", "w", newline='')
 writer = csv.writer(setFile)
 writer.writerow(["Card Name", "Set", "Product ID", "SKU ID", "Condition", "Edition", "Language", "Available Lowest Price", "Buy (Y/N", "Sold Market Price", "Sold Lowest Price", "Sold Highest Price"])
 
-# Need to edit for more null data from the sold pricing
+# Replaces null with N/A to facilitate excel formatting
 for setName, setList in skuDictionary.items():
     for cardName in setList:
         for skuKey, skuFields in cardName[2].items():
@@ -80,11 +80,3 @@ for setName, setList in skuDictionary.items():
                     skuBlock.append(items)
             writer.writerow(skuBlock)
 setFile.close()
-
-#Needs a way to toss the skuMarketPricing and skuSoldPricing(Incomplete) after they've been processed
-
-#if skuComplete:
-    # Delete the complete sold
-#else:
-    # Delete the incomplete sold
-# Delete the market pricing in either case
