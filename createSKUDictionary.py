@@ -4,6 +4,7 @@ import requests
 import json
 from variables import *
 from datetime import datetime
+import time
 
 runSuccess = 0
 while runSuccess != 1: # Retry logic

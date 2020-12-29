@@ -24,6 +24,24 @@ else
     echo "No difference detected, SKU update not required"
 fi
 
+if [ -f "skuMarketPricing.txt" ]
+then
+    echo "Removing skuMarketPricing.txt"
+    rm "skuMarketPricing.txt"
+fi
+
+if [ -f "skuSoldPricing.txt" ]
+then
+    echo "Removing skuSoldPricing.txt"
+    rm "skuSoldPricing.txt"
+fi
+
+if [ -f "skuSoldPricingIncomplete.txt" ]
+then
+    echo "Removing skuSoldPricingIncomplete.txt"
+    rm "skuSoldPricingIncomplete.txt"
+fi
+
 echo "Running getMarketPrices"
 # This reads the .txt file created from createSKUDictionary and pulls the market pricing information from TCGPlayer for each SKU
 # Expected runtime is 7 minutes
