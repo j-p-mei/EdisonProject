@@ -3,7 +3,10 @@
 # This script runs every night and pulls pricing data by calling the TCGPlayer API
 
 echo "Running getSetNames"
-python "getSetNames.py setDictionaryNew.csv"
+
+touch setDictionaryNew.csv
+
+python getSetNames.py setDictionaryNew.csv
 
 DIFF=$(diff setDictionaryNew.csv setDictionary.csv) 
 
@@ -14,14 +17,15 @@ then
     mv setDictionaryNew.csv setDictionary.csv
     echo "Running getCardsBySet"
     # Set update requires update the dictionary of cards and corresponding product ID and set
-    python "getCardsBySet.py"
+    python getCardsBySet.py
     echo "Running createSKUDictionary"
     # This generates a file whose entries contain 
     # Note that SKUs are representations of condition, edition, and language combinations
     # {Card Name: [[Set Name, PID, {SKU: [Condition, Edition, Language]}]]
-    python "createSKUDictionary.py"
+    python createSKUDictionary.py
 else
     echo "No difference detected, SKU update not required"
+    rm setDictionaryNew.csv
 fi
 
 if [ -f "skuMarketPricing.txt" ]
@@ -45,24 +49,24 @@ fi
 echo "Running getMarketPrices"
 # This reads the .txt file created from createSKUDictionary and pulls the market pricing information from TCGPlayer for each SKU
 # Expected runtime is 7 minutes
-python "getMarketPrices.py"
+python getMarketPrices.py
 
 echo "Running getSoldPrices"
 # This reads the .txt file created from createSKUDictionary and pulls the sales pricing information from TCGPlayer for each SKU
 # Expected runtime is 14 hours
-python "getSoldPrices.py"
+python getSoldPrices.py
 
 echo "Running SKUmerge"
 #Generastes files (csv, txt) that contains each card's static information + pricing information 
-python "SKUmerge.py"
+python SKUmerge.py
 
 echo "Running dataCleanse"
 # Generates files (csv, txt) that contains each card's static information + pricing information 
-python "dataCleanse.py"
+python dataCleanse.py
 
 echo "Running sendData"
 # Sends .txt file from dataCleanse to MongoDB
-python "sendData.py"
+python sendData.py
 echo "Output sent to MongoDB"
 
 echo "Removing temporary data files"
