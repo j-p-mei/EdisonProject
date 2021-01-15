@@ -60,7 +60,7 @@ for cardName, setList in cleanPriceDictionary.items():
 
 # Timestamp for daily pricing information
 now = datetime.now()
-dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+dt_string = now.strftime("%d/%m/%Y")
 cleanNested["date"] = dt_string
 
 json.dump(cleanNested, open("output.txt", 'w'))
