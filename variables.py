@@ -9,7 +9,7 @@ secret = "a2f65722-c646-4b22-887c-be3c19e77992"
 
 categoryId = 2
 
-logging.basicConfig(filename="logtest.txt", format='[%(asctime)s - %(levelname)s]: %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(filename="edisonlog.txt", format='[%(asctime)s - %(levelname)s]: %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 mongo_user = "admin"
 mongo_pw = "edison"
 mongo_dbname = "CL0"

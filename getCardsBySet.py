@@ -5,10 +5,12 @@ import json
 from variables import *
 from datetime import datetime
 
+logging.info(" ===== SECTION ===== " )
+logging.info("Starting getCardsBySet")
+
 # Sets from getSetNames.py are converted to dictionaries below
 setDictionary = {}
 reverseSetDictionary = {}
-
 with open('setDictionary.csv', newline='') as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
@@ -16,6 +18,8 @@ with open('setDictionary.csv', newline='') as csvfile:
         setID = row["SetID"]
         setDictionary[set] = setID
         reverseSetDictionary[setID] = set
+
+logging.info("Converted setDictionary.csv into dictionary for logic")
 
 url = "https://api.tcgplayer.com/pricing/group/groupId"
 
@@ -28,6 +32,8 @@ headers = {
 
 everyCard = {}
 emptySets = []
+
+logging.info("Going through the reverse set dictionary")
 
 for sets in reverseSetDictionary:
     url_card = "https://api.tcgplayer.com/catalog/products/"
@@ -49,7 +55,11 @@ for sets in reverseSetDictionary:
             "offset": offset
         }
 
-        response_card = requests.request("GET", url_card, headers=headers_set, params=payload_set)
+        try:
+            response_card = requests.request("GET", url_card, headers=headers_set, params=payload_set)
+        except:
+            logging.critical("failed request: %s, %s, %s" % (url, headers_set, payload_set))
+        
         json_response_card = json.loads(response_card.text)
         json_response_card_results = json_response_card["results"]
 
@@ -70,6 +80,9 @@ for sets in reverseSetDictionary:
                 break
         offset += 100
         count += 1
+logging.info("Finished going through the reverse set dictionary")
+
 
 json.dump(emptySets, open("emptySets.txt", 'w'))
 json.dump(everyCard, open("allCardsPid.txt", 'w'))
+logging.info("Dumping contents into emptySets.txt and allCardsPid.txt")

@@ -13,7 +13,7 @@ DIFF=$(diff setDictionaryNew.csv setDictionary.csv)
 if [ "$DIFF" != "" ] 
 then
     # This should run when a new set is released
-    echo "Difference detected, loading new setDictionary"
+    echo "Difference detected, loading new setDictionary" >> /var/log/edisonlog.txt
     mv setDictionaryNew.csv setDictionary.csv
     echo "Running getCardsBySet"
     # Set update requires update the dictionary of cards and corresponding product ID and set
