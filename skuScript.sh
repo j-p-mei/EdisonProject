@@ -24,7 +24,7 @@ then
     # {Card Name: [[Set Name, PID, {SKU: [Condition, Edition, Language]}]]
     python createSKUDictionary.py
 else
-    echo "No difference detected, SKU update not required"
+    echo "No difference detected, SKU update not required" >> /var/log/edisonlog.txt
     rm setDictionaryNew.csv
 fi
 
