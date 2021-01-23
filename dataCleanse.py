@@ -60,7 +60,10 @@ for cardName, setList in cleanPriceDictionary.items():
 
 # Timestamp for daily pricing information
 now = datetime.now()
-dt_string = now.strftime("%d/%m/%Y")
+dt_string = now.strftime("%Y/%m/%d")
 cleanNested["date"] = dt_string
 
+# Dump for MongoDB
 json.dump(cleanNested, open("output.txt", 'w'))
+# Dump dated version for record
+json.dump(cleanNested, open("output_" + dt_string + ".txt", 'w'))

@@ -63,7 +63,7 @@ json.dump(skuDictionary, open("output_raw.txt", 'w'))
 
 # Final output in CSV form
 now = datetime.now()
-dt_string = now.strftime("%d.%m.%Y")
+dt_string = now.strftime("%Y.%m.%d")
 setFile = open("output_" + dt_string + ".csv", "w", newline='')
 writer = csv.writer(setFile)
 writer.writerow(["Card Name", "Set", "Product ID", "SKU ID", "Condition", "Edition", "Language", "Available Lowest Price", "Buy (Y/N", "Sold Market Price", "Sold Lowest Price", "Sold Highest Price"])
@@ -72,7 +72,7 @@ writer.writerow(["Card Name", "Set", "Product ID", "SKU ID", "Condition", "Editi
 for setName, setList in skuDictionary.items():
     for cardName in setList:
         for skuKey, skuFields in cardName[2].items():
-            skuBlock = [cardName[0], setName, cardName[1], skuKey]
+            skuBlock = [setName, cardName[0], cardName[1], skuKey]
             for items in skuFields:
                 if items is None:
                     skuBlock.append("N/A")
