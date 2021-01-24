@@ -3,11 +3,15 @@ import json
 from variables import *
 from datetime import datetime
 
+logging.info(" ===== SECTION ===== " )
+logging.info("Starting dataCleanse")
+
 prices = open("output_raw.txt")
 priceDictionary = json.load(prices)
 
 cleanPriceDictionary = {}
 
+logging.info("Removing price outliers and periods (to comply with MongoDB formatting)")
 for cardName, setList in priceDictionary.items():
     for cardPrint in setList:
         for sku, priceInfo in cardPrint[2].items():
@@ -20,7 +24,7 @@ for cardName, setList in priceDictionary.items():
     # MongoDB cannot process key names with "."
     cleanPriceDictionary[cardName.replace(".","")] = setList
 
-# Convert output to nested dictionary
+logging.info("Converting output to nested dictionary")
 cleanNested = {}
 count = 0
 for cardName, setList in cleanPriceDictionary.items():
@@ -65,5 +69,8 @@ cleanNested["date"] = dt_string
 
 # Dump for MongoDB
 json.dump(cleanNested, open("output.txt", 'w'))
+logging.info("Successfully wrote to output.txt for upload to MongoDB")
+
 # Dump dated version for record
 json.dump(cleanNested, open("output_" + dt_string + ".txt", 'w'))
+logging.info("Successfully wrote to %s for separate storage use" % ("output_" + dt_string + ".txt"))

@@ -22,6 +22,7 @@ while runSuccess != 1: # Retry logic
         setDictionary = {}
         reverseSetDictionary = {}
 
+        logging.info("Loading set dictionary from csv")
         with open('setDictionary.csv', newline='') as csvfile:
             reader2 = csv.DictReader(csvfile)
             for row in reader2:
@@ -57,7 +58,8 @@ while runSuccess != 1: # Retry logic
                     try:
                         response_condition = requests.request("GET", url_condition, headers=headers_condition, params=payload_condition)
                     except:
-                        logging.critical("failed request: %s, %s, %s" % (url_condition, headers_condition, payload_condition))
+                        logging.critical("Failed request: %s, %s, %s" % (url_condition, headers_condition, payload_condition))
+
                     json_response_condition = json.loads(response_condition.text)
                     json_response_results_condition = json_response_condition["results"]
                     # Conditions: NM-1, LP-2, MP-3, Unopened-6
@@ -65,7 +67,8 @@ while runSuccess != 1: # Retry logic
                     cardCount += 1
 
                     if cardCount % 1000 == 0:
-                        logging.info("Writing data to allCardsPidSku.txt")
+                        if cardCount % 10000 == 0:
+                            logging.info("Writing data to allCardsPidSku.txt")
                         json.dump(cardDictionary, open("allCardsPidSku.txt", 'w'))
 
         # Successfully created pulled all SKU data
@@ -86,7 +89,7 @@ while runSuccess != 1: # Retry logic
         logging.warning("Connection Error")
         time.sleep(30)
     except:
-        # All other errors, maximum of 10
+        # All other errors, maximum of 100
         logging.warning("Other Error")
         runSuccess = runSuccess - 1
         if runSuccess > -100:

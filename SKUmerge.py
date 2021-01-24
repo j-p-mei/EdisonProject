@@ -5,10 +5,14 @@ import json
 from variables import *
 from datetime import datetime
 
+logging.info(" ===== SECTION ===== " )
+logging.info("Starting SKUmerge")
+
 # SKU dictionary contains all cards by set, product ID, and SKU ID
 skuFile = open("allCardsPidSku.txt")
 skuDictionary = json.load(skuFile)
 
+logging.info("Processing SKU dictionary, removing MP-HP SKUs")
 # Removes SKUs related to Heavily Played and Damaged Cards
 for product, setList in skuDictionary.items():
     for cardPrint in setList:
@@ -23,6 +27,7 @@ for product, setList in skuDictionary.items():
         cardPrint.insert(2, skuSet)
         cardPrint.pop()
 
+logging.info("Merging with market prices")
 # Market pricing pull (structured as a list of list of dictionaries, SKU is stored as an integer)
 marketPricing = open("skuMarketPricing.txt")
 marketPricingDataRaw = json.load(marketPricing)
@@ -32,18 +37,22 @@ for marketChunks in marketPricingDataRaw:
     for marketPoint in marketChunks:
         marketPricingData[marketPoint["skuId"]] = marketPoint["lowestListingPrice"]
 
+
 # Sold pricing pull (structured as a dictionary of lists, SKU is stored as a string)
 skuComplete = True
 try:
     soldPricing = open("skuSoldPricing.txt")
     soldPricingData = json.load(soldPricing)
+    logging.info("Merging with sold prices")
 except:
     soldPricing = open("skuSoldPricingIncomplete.txt")
     soldPricingData = json.load(soldPricing)
+    logging.info("Merging with sold prices (incomplete)")
     skuComplete = False
 
 count = 0
 
+logging.info("Producing TXT output")
 # Merge card data with market and sold pricing
 for setName, setList in skuDictionary.items():
     for cardName in setList:
@@ -55,12 +64,13 @@ for setName, setList in skuDictionary.items():
                 skuFields.append(soldPricingData[str(skuKey)][1]) # Append lowest sold price
                 skuFields.append(soldPricingData[str(skuKey)][2]) # Append highest sold price
                 count += 1
-                #print(count)
             except:
                 pass
 # Output for MongoDB, not final - needs to be cleaned by dataCleanse
 json.dump(skuDictionary, open("output_raw.txt", 'w'))
+logging.info("Successfully wrote to output_raw.txt")
 
+logging.info("Producing CSV output")
 # Final output in CSV form
 now = datetime.now()
 dt_string = now.strftime("%Y.%m.%d")
@@ -80,3 +90,4 @@ for setName, setList in skuDictionary.items():
                     skuBlock.append(items)
             writer.writerow(skuBlock)
 setFile.close()
+logging.info("Successfully wrote to %s" % ("output_" + dt_string + ".csv"))

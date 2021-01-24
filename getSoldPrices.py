@@ -6,6 +6,9 @@ from variables import *
 from datetime import datetime
 import time
 
+logging.info(" ===== SECTION ===== ")
+logging.info("Starting getSoldPrices")
+
 # SKU dictionary contains all cards by set, product ID, and SKU ID
 skuFile = open("allCardsPidSku.txt")
 skuDictionary = json.load(skuFile)
@@ -18,6 +21,7 @@ NM = [[], [], []]
 LP = [[], [], []]
 MP = [[], [], []]
 
+logging.info("Grouping SKUs by edition/condition category")
 # Removes SKUs related to Heavily Played and Damaged Cards
 for product, setList in skuDictionary.items():
     for cardPrint in setList:
@@ -58,6 +62,7 @@ while runSuccess != 1: # Retry logic
         except:
             skuSoldDictionary = {}
 
+        logging.info("Pulling sold prices from TCGPlayer API")
         for skuConditions in onlySKU:
             for skuIndividual in skuConditions:
                 url_sku = "https://api.tcgplayer.com/pricing/marketprices/productconditionId"
@@ -69,18 +74,18 @@ while runSuccess != 1: # Retry logic
                 try:
                     inDictionary = skuSoldDictionary[str(skuIndividual)]
                     successCount += 1
-                    #print("success " + str(successCount))
                 except:
-                    #print(skuIndividual)
                     payload_sku = {
                                 "productconditionId" : skuIndividual
                                 }
 
-                    response_sku_sold = requests.request("GET", url_sku, headers=headers_sku, params=payload_sku)
+                    try:
+                        response_sku_sold = requests.request("GET", url_sku, headers=headers_sku, params=payload_sku)
+                    except:
+                        logging.critical("Failed request: %s, %s, %s" % (url_sku, headers_sku, payload_sku))
 
                     json_response_sku_sold = json.loads(response_sku_sold.text)
                     json_response_results = json_response_sku_sold["results"]
-                    #print(json_response_results)
                     if json_response_results == []:
                         # No sales data over the past 30 days available
                         skuSoldDictionary[skuIndividual] = [None, None, None]
@@ -94,12 +99,14 @@ while runSuccess != 1: # Retry logic
                     if cardCount == 0:
                         cardCount = successCount
                     cardCount += 1
-                    #print(cardCount)
                     if cardCount % 1000 == 0:
                         # Save spot after every 1000th iteration (roughly every 7 minutes)
-                        print(cardCount)
+                        if cardCount % 10000 == 0:
+                            logging.info(cardCount)
+                            logging.info("Writing data to skuSoldPricing.txt")
                         json.dump(skuSoldDictionary, open("skuSoldPricing.txt", 'w'))
         # Successfully passed every SKU
+        logging.info("Writing and finalizing data to skuSoldPricing.txt")
         json.dump(skuSoldDictionary, open("skuSoldPricing.txt", 'w'))
         runSuccess = 1
     except TimeoutError:
@@ -107,30 +114,29 @@ while runSuccess != 1: # Retry logic
         runSuccess = runSuccess - 0.01
         if runSuccess <= -10:
             exit() # Failed operation
-        print("===== Timeout Error =====")
+        logging.warning("Timeout Error")
         time.sleep(35)
     except ConnectionResetError:
         # Connection forcibly closed by remote host
         runSuccess = runSuccess - 0.01
         if runSuccess <= -10:
             exit() # Failed operation
-        print("===== Remote host closed connection =====")
+        logging.warning("Remote host closed connection")
         time.sleep(185)
     except (ConnectionError, ConnectionAbortedError, ConnectionRefusedError):
         # Miscellaneous connection errors (e.g. remote end closed connection without response)
         runSuccess = runSuccess - 0.01
         if runSuccess <= -10:
             exit() # Failed operation
-        print("===== Connection Error =====")
+        logging.warning("Connection Error")
         time.sleep(95)
     except:
         # All other errors, maximum of 10
-        print("===== Other Error =====")
+        logging.warning("Other Error")
         runSuccess = runSuccess - 1
         if runSuccess > -1000:
             time.sleep(65)
         else:
-            print("Failed to pass every SKU")
             # Create incomplete SKU dictionary - merge file will be able to process
             for skuConditions in onlySKU:
                 for skuIndividual in skuConditions:
@@ -139,4 +145,5 @@ while runSuccess != 1: # Retry logic
                     except:
                         skuSoldDictionary[skuIndividual] = ["Incomplete", "Incomplete", "Incomplete"]
             json.dump(skuSoldDictionary, open("skuSoldPricingIncomplete.txt", 'w'))
+            logging.critical("Failed to pull every sold price")
             break
