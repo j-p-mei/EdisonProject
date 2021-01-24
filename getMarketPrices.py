@@ -5,10 +5,14 @@ import json
 from variables import *
 from datetime import datetime
 
+logging.info(" ===== SECTION ===== ")
+logging.info("Starting getMarketPrices")
+
 # SKU dictionary contains all cards by set, product ID, and SKU ID
 skuFile = open("allCardsPidSku.txt")
 skuDictionary = json.load(skuFile)
 
+logging.info("Processing SKU dictionary, removing MP-HP SKUs")
 # Removes SKUs related to Heavily Played and Damaged Cards
 for product, setList in skuDictionary.items():
     for cardPrint in setList:
@@ -47,15 +51,23 @@ skuBegin = 0
 skuEnd = skuBegin + skuLength
 marketResultSKU = []
 
+logging.info("Pulling batches of market prices from TCGPlayer API")
 while (skuEnd <= len(onlySKU)):
     skuPass = ",".join(onlySKU[skuBegin:skuEnd])
     payload_sku = {
                 "skuIds" : skuPass
                 }
-    response_sku = requests.request("GET", url_sku, headers=headers_sku, params=payload_sku)
+    try:
+        response_sku = requests.request("GET", url_sku, headers=headers_sku, params=payload_sku)
+    except:
+        logging.critical("Failed request: %s, %s, %s" % (url_sku, headers_sku, payload_sku))
 
     json_response_sku = json.loads(response_sku.text)
     json_response_sku_results = json_response_sku["results"]
+
+    if json_response_sku_results == []:
+        logging.warning("Empty array appended - consider renewing token")
+
     marketResultSKU.append(json_response_sku_results)
 
     if skuEnd == len(onlySKU):
@@ -63,4 +75,5 @@ while (skuEnd <= len(onlySKU)):
     skuBegin = skuEnd
     skuEnd = min(skuBegin + skuLength, len(onlySKU))
 
+logging.info("Market prices pulled, dumping into text file")
 json.dump(marketResultSKU, open("skuMarketPricing.txt", 'w'))
