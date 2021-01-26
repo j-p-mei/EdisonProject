@@ -72,5 +72,6 @@ json.dump(cleanNested, open("output.txt", 'w'))
 logging.info("Successfully wrote to output.txt for upload to MongoDB")
 
 # Dump dated version for record
-json.dump(cleanNested, open("output_" + dt_string + ".txt", 'w'))
-logging.info("Successfully wrote to %s for separate storage use" % ("output_" + dt_string + ".txt"))
+dt_string_txt = now.strftime("%Y.%m.%d")
+json.dump(cleanNested, open("output_" + dt_string_txt + ".txt", 'w'))
+logging.info("Successfully wrote to %s for separate storage use" % ("output_" + dt_string_txt + ".txt"))
