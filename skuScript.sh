@@ -13,7 +13,7 @@ DIFF=$(diff setDictionaryNew.csv setDictionary.csv)
 if [ "$DIFF" != "" ] 
 then
     # This should run when a new set is released
-    echo "Difference detected, loading new setDictionary" >> /var/log/edisonlog.txt
+    echo "Difference detected, loading new setDictionary" >> edisonlog.txt
     mv setDictionaryNew.csv setDictionary.csv
     echo "Running getCardsBySet"
     # Set update requires update the dictionary of cards and corresponding product ID and set
@@ -24,7 +24,7 @@ then
     # {Card Name: [[Set Name, PID, {SKU: [Condition, Edition, Language]}]]
     python createSKUDictionary.py
 else
-    echo "No difference detected, SKU update not required" >> /var/log/edisonlog.txt
+    echo "No difference detected, SKU update not required" >> edisonlog.txt
     rm setDictionaryNew.csv
 fi
 
