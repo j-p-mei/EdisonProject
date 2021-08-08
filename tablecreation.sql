@@ -14,6 +14,10 @@ create table Card(
 create table CardPrice(
     CardID  integer, 
     PriceDate date,
-    Price double
+    AvailableLowestPrice double,
+    SoldMarket double,
+    SoldLowest double,
+    SoldHighest double
 )
 
+create index index_productid_skuid on carddatabase.card(productid, skuid)
